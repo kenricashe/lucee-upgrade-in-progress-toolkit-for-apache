@@ -62,10 +62,20 @@ UPG_DIR="${LUCEE_ROOT}/sys/upgrade-in-progress"
 mkdir -p "$UPG_DIR/tests"
 
 function copy_and_chmod() {
-	local src="${SCRIPT_DIR}/$1"
-	local dst="${UPG_DIR}/$1"
+	local file="$1"
+	local src_dir
+	local dst="${UPG_DIR}/$file"
+	local parent_dir="$(dirname "$SCRIPT_DIR")"
+	if [[ "$file" == *.conf ]]; then
+		src_dir="${parent_dir}/apache"
+	elif [[ "$file" == *.html ]]; then
+		src_dir="${parent_dir}/html"
+	else
+		src_dir="$SCRIPT_DIR"
+	fi
+	local src="${src_dir}/$file"
 	cp -f --no-preserve=all "$src" "$dst"
-	if [[ "$1" == *.sh ]]; then
+	if [[ "$file" == *.sh ]]; then
 		chmod +x "$dst"
 	fi
 }
