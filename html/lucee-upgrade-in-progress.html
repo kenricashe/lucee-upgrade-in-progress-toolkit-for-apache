@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>App Server Upgrade In Progress</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+	const numInterval = window.location.hostname.includes('dev.') ? 2000 : 60000;
+	function checkUpgradeStatus() {
+		fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' })
+		.then(response => {
+			const isUpgrade = response.headers.get('X-Lucee-Upgrade') === '1';
+			if (!isUpgrade) window.location.reload();
+		})
+		.catch(error => {
+			console.log('Error checking upgrade status:', error);
+		});
+	}
+	setInterval(checkUpgradeStatus, numInterval);
+});
+</script>
+<style>
+body {
+	font-family: serif;
+	text-align: center;
+	margin-top: 20px;
+}
+h1, p {
+	margin: 10px 0;
+	text-wrap: balance;
+}
+h1 {
+	font-size: 32px;
+}
+p {
+	font-size: 20px;
+}
+.container {
+	max-width: 600px;
+	margin: 0 auto;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>App Server Upgrade In Progress</h1>
+<p>Barring any unforeseen complications, it should take up to about 15 minutes.</p>
+<p>If you're standing by, this page will automatically refresh when the upgrade is complete!</p>
+</div>
+</body>
+</html>
