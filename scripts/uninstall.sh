@@ -201,7 +201,9 @@ restore_htaccess_errordocument() {
 		log_verbose "Found commented ErrorDocument 404 in .htaccess: $htaccess_original"
 		
 		if [ "$PREVIEW_MODE" = true ]; then
-			echo "Would restore ErrorDocument 404 in $htaccess_file"
+			echo "Would restore ErrorDocument 404 in $htaccess_file:"
+			echo "  $htaccess_original"
+			TOTAL_ITEMS_PROCESSED=$((TOTAL_ITEMS_PROCESSED + 1))
 		else
 			# Backup if requested
 			if [ "$BACKUP_BEFORE_REMOVE" = true ]; then
@@ -270,6 +272,7 @@ restore_original_errordocument_404() {
 	all_docroots=$(grep -E "^[[:space:]]*DocumentRoot[[:space:]]+" "$vhost_file" 2>/dev/null | sed -E 's/^[[:space:]]*DocumentRoot[[:space:]]+//' | tr -d '"')
 	
 	if [ -n "$all_docroots" ]; then
+		echo "${PREVIEW_PREFIX}Checking .htaccess files in document roots for ErrorDocument restoration..."
 		while IFS= read -r docroot; do
 			if [ -z "$docroot" ]; then
 				continue
@@ -277,39 +280,13 @@ restore_original_errordocument_404() {
 			
 			local htaccess_file="${docroot}/.htaccess"
 			if [ -f "$htaccess_file" ]; then
-				restore_htaccess_errordocument "$htaccess_file"
+				if grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
+					echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
+					restore_htaccess_errordocument "$htaccess_file"
+				fi
 			fi
 		done <<< "$all_docroots"
 	fi
-}
-
-# cPanel-specific function to restore ErrorDocument 404 in .htaccess files using SITES_FILE
-restore_cpanel_htaccess_errordocuments() {
-	
-	echo "${PREVIEW_PREFIX}Processing cPanel .htaccess files for ErrorDocument restoration..."
-	local processed_count=0
-	
-	while read -r domain docroot _; do
-		if [ -z "$domain" ] || [ -z "$docroot" ]; then
-			continue
-		fi
-		
-		local htaccess_file="${docroot}/.htaccess"
-		
-		if [ -f "$htaccess_file" ]; then
-			if restore_htaccess_errordocument "$htaccess_file"; then
-				echo "  ${PREVIEW_PREFIX}Restored ErrorDocument 404 for $domain"
-				processed_count=$((processed_count + 1))
-			fi
-		fi
-	done < "$SITES_FILE"
-	
-	if [ "$processed_count" -gt 0 ]; then
-		echo "${PREVIEW_PREFIX}Processed $processed_count cPanel .htaccess files"
-	else
-		echo "${PREVIEW_PREFIX}No cPanel .htaccess files needed ErrorDocument restoration"
-	fi
-	echo ""
 }
 
 # Function to remove Include directives from VirtualHost files
@@ -340,14 +317,18 @@ remove_include_directives() {
 		fi
 	done
 	
-	if [ "$modified" = true ] && [ "$PREVIEW_MODE" = false ]; then
-		log_action "Removed upgrade Include directives from: $vhost_file"
+	if [ "$modified" = true ]; then
+		if [ "$PREVIEW_MODE" = false ]; then
+			log_action "Removed upgrade Include directives from: $vhost_file"
+			
+			# Normalize whitespace to clean up extra blank lines after actual changes
+			normalize_conf_whitespace "$vhost_file"
+		fi
 		
 		# Try to restore original ErrorDocument 404 directives by uncommenting
+		# Do this in both preview and execution modes
+		echo "${PREVIEW_PREFIX}Checking for commented ErrorDocument 404 directives to restore..."
 		restore_original_errordocument_404 "$vhost_file"
-		
-		# Normalize whitespace to clean up extra blank lines
-		normalize_conf_whitespace "$vhost_file"
 	fi
 }
 
@@ -475,10 +456,43 @@ process_uninstall_operations() {
 		echo ""
 	fi
 	
-	# Process cPanel .htaccess files for ErrorDocument restoration
-	if [ "$IS_CPANEL" = true ]; then
-		restore_cpanel_htaccess_errordocuments
+	# Check for .htaccess files that need restoration (for all environment types)
+	echo "${PREVIEW_PREFIX}Checking for .htaccess files with commented ErrorDocument directives..."
+	local htaccess_processed_count=0
+	
+	# Check VirtualHost files for DocumentRoot values
+	if [ -n "$vhost_files" ]; then
+		while IFS= read -r vhost_file; do
+			if [ -n "$vhost_file" ] && [ -f "$vhost_file" ]; then
+				# Find DocumentRoot values in this vhost file
+				local docroots
+				docroots=$(grep -E "^[[:space:]]*DocumentRoot[[:space:]]+" "$vhost_file" 2>/dev/null | sed -E 's/^[[:space:]]*DocumentRoot[[:space:]]+//' | tr -d '"')
+				
+				if [ -n "$docroots" ]; then
+					while IFS= read -r docroot; do
+						if [ -z "$docroot" ]; then
+							continue
+						fi
+						
+						local htaccess_file="${docroot}/.htaccess"
+						if [ -f "$htaccess_file" ] && grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
+							echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
+							if restore_htaccess_errordocument "$htaccess_file"; then
+								htaccess_processed_count=$((htaccess_processed_count + 1))
+							fi
+						fi
+					done <<< "$docroots"
+				fi
+			fi
+		done <<< "$vhost_files"
 	fi
+	
+	if [ "$htaccess_processed_count" -gt 0 ]; then
+		echo "${PREVIEW_PREFIX}Found and processed $htaccess_processed_count .htaccess files with ErrorDocument directives"
+	else
+		echo "${PREVIEW_PREFIX}No .htaccess files needed ErrorDocument restoration"
+	fi
+	echo ""
 	
 	# Remove upgrade HTML files
 	if [ -n "$upgrade_html_files" ]; then
