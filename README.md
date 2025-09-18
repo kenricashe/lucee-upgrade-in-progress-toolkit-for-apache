@@ -4,8 +4,6 @@
 [![GitHub stars](https://img.shields.io/github/stars/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/issues)
 
-> **Eliminate ugly 503 errors during Lucee upgrades with professional "Upgrade in Progress" notifications**
-
 Web-based status notifications during Lucee upgrades are a Catch-22 because Lucee itself is not running during the upgrade. That results in an ugly "503 Service Unavailable" error. While it's true that `ErrorDocument 503` can be customized, that page is only displayed when Lucee is not running.
 
 In actual practice it's safest to keep displaying the "Upgrade in Progress" notification not just until after the upgrade is done, but more importantly until *thorough QA testing* has been completed.
