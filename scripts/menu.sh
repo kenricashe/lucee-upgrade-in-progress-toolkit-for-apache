@@ -37,7 +37,8 @@ run_get_sites() {
 
 run_edit_sites() {
 	if [ ! -f "${SITES_FILE}" ]; then
-		print "\nSites file not found: ${SITES_FILE}\n\nRun 'Get Apache Site Data' first to generate it."
+		clear
+		printf "\nSites file not found: ${SITES_FILE}\n\nRun 'Get Apache Site Data' first to generate it."
 		press_enter_to_continue
 		return
 	fi
