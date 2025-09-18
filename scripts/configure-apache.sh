@@ -1154,7 +1154,6 @@ copy_upgrade_html() {
 	echo -n "  "
 	execute_or_simulate "copy_file" "${UPG_DIR}/lucee-upgrade-in-progress.html" "${docroot}/lucee-upgrade-in-progress.html"
 	
-	# Set ownership and permissions to match docroot parent if not in preview mode
 	if [ "$PREVIEW_MODE" = false ]; then
 		local owner_group
 		owner_group=$(stat -c "%U:%G" "$docroot" 2>/dev/null)
@@ -1162,15 +1161,8 @@ copy_upgrade_html() {
 			chown $owner_group "${docroot}/lucee-upgrade-in-progress.html" 2>/dev/null || true
 			echo "  Set ownership of ${docroot}/lucee-upgrade-in-progress.html to $owner_group"
 		fi
-		
-		# Get and set permissions to match docroot
-		local docroot_perms
-		docroot_perms=$(stat -c "%a" "$docroot" 2>/dev/null)
-		if [ -n "$docroot_perms" ]; then
-			# Apply the same permissions as the docroot
-			chmod "$docroot_perms" "${docroot}/lucee-upgrade-in-progress.html" 2>/dev/null || true
-			echo "  Set permissions of ${docroot}/lucee-upgrade-in-progress.html to match docroot ($docroot_perms)"
-		fi
+		chmod "664" "${docroot}/lucee-upgrade-in-progress.html" 2>/dev/null || true
+		echo "  Set permissions of ${docroot}/lucee-upgrade-in-progress.html to 664"
 	fi
 }
 
