@@ -1,5 +1,11 @@
 # Lucee 'Upgrade in Progress' Toolkit for Apache
 
+[![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1)
+[![GitHub stars](https://img.shields.io/github/stars/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/issues)
+
+> **Eliminate ugly 503 errors during Lucee upgrades with professional "Upgrade in Progress" notifications**
+
 Web-based status notifications during Lucee upgrades are a Catch-22 because Lucee itself is not running during the upgrade. That results in an ugly "503 Service Unavailable" error. While it's true that `ErrorDocument 503` can be customized, that page is only displayed when Lucee is not running.
 
 In actual practice it's safest to keep displaying the "Upgrade in Progress" notification not just until after the upgrade is done, but more importantly until *thorough QA testing* has been completed.
@@ -46,7 +52,7 @@ Users are not redirected to a different page, so the URL does not change. They w
 
 ## Requirements
 
-- One of the two main Linux familes (Debian, Ubuntu, Pop!_OS, etc or Fedora, Red Hat, AlmaLinux, Rocky Linux, etc).
+- One of the two main Linux families (Debian, Ubuntu, Pop!_OS, etc or Fedora, Red Hat, AlmaLinux, Rocky Linux, etc).
 cPanel-managed servers are also supported.
 
 - Root or sudo permissions.
@@ -70,7 +76,7 @@ To add an IP address to the allow list, use the menu option "IP Allow List (for 
 To exclude an entire site, *before configuring Apache*, remove it from the sites data file via the app menu option "View/Edit Site Data". That is mostly suitable only for QA domains e.g. `qa.example.com`.
 
 
-## Install
+## Installation
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/main/scripts/install.sh | sudo bash
@@ -82,7 +88,9 @@ Example: Before opening the menu and running the Apache configuration script,
 you may want to change the 15 minute estimated downtime in
 `/opt/lucee/sys/upgrade-in-progress/lucee-upgrade-in-progress.html`.
 
-## Open the Toolkit Menu
+## Usage
+
+### Open the Toolkit Menu
 
 ```bash
 sudo /opt/lucee/sys/upgrade-in-progress/menu.sh
