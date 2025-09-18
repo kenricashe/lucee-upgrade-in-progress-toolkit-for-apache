@@ -1070,20 +1070,10 @@ ensure_global_confs() {
 		echo "Would create ${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf" >&2
 	else
 		echo "Create ${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf" >&2
-		
-		# Create a temporary file
 		local tmp=$(mktemp)
-		
-		# Escape '&' for sed replacement
 		local ESC_HTTPD_ROOT="${HTTPD_ROOT//&/\\&}"
-		
-		# Replace the template's hardcoded /etc/apache2 with detected HTTPD_ROOT
 		sed "s|/etc/apache2|${ESC_HTTPD_ROOT}|g" "${UPG_DIR}/lucee-detect-upgrade.conf" > "$tmp"
-		
-		# Copy the processed file to the destination
 		cp -f --no-preserve=all "$tmp" "${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf"
-		
-		# Remove the temporary file
 		rm -f "$tmp"
 	fi
 
