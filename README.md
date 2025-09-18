@@ -89,3 +89,5 @@ you may want to change the 15 minute estimated downtime in
 ```bash
 sudo /opt/lucee/sys/upgrade-in-progress/menu.sh
 ```
+
+Then run each item in the menu in the order that they are listed.

@@ -116,9 +116,9 @@ while true; do
 	echo ""
 	echo "e) End 'Upgrade in Progress'"
 	echo ""
-	echo "q) Quit"
+	echo "q) Quit (closes this menu)"
 	echo ""
-	echo "u) Uninstall"
+	echo "u) Uninstall (optional)"
 	echo ""
 	read -r -p "Select an option: " choice
 	case "${choice}" in
