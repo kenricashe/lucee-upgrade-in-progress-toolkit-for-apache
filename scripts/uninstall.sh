@@ -189,17 +189,10 @@ restore_htaccess_errordocument() {
 	fi
 	
 	log_verbose "Checking .htaccess file for commented ErrorDocument: $htaccess_file"
-	echo "DEBUG: In restore_htaccess_errordocument for file: $htaccess_file"
 	
 	# Check if there's a commented-out ErrorDocument with our note pattern
 	local htaccess_commented
-	echo "DEBUG: Searching for note pattern"
-	local note_line
-	note_line=$(grep "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null)
-	echo "DEBUG: Note line: '$note_line'"
-	
 	htaccess_commented=$(grep -A1 "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null | grep -E "^[[:space:]]*#[[:space:]]*ErrorDocument[[:space:]]+404[[:space:]]+" | head -1)
-	echo "DEBUG: Commented ErrorDocument line: '$htaccess_commented'"
 	
 	if [ -n "$htaccess_commented" ]; then
 		local htaccess_original
@@ -218,22 +211,13 @@ restore_htaccess_errordocument() {
 			fi
 			
 			# Remove the note line
-			echo "DEBUG: Removing note line"
 			sed -i "/NOTE: ErrorDocument 404.*configure-apache.sh/d" "$htaccess_file"
-			echo "DEBUG: After removing note line:"
-			cat "$htaccess_file"
 			
 			# Uncomment the ErrorDocument line
-			echo "DEBUG: Uncommenting ErrorDocument line"
 			sed -i 's/^\([[:space:]]*\)#[[:space:]]*\(ErrorDocument[[:space:]]\+404.*\)/\1\2/' "$htaccess_file"
-			echo "DEBUG: After uncommenting ErrorDocument line:"
-			cat "$htaccess_file"
 			
 			# Normalize whitespace to clean up any extra blank lines
-			echo "DEBUG: Normalizing whitespace"
 			normalize_conf_whitespace "$htaccess_file"
-			echo "DEBUG: After normalizing whitespace:"
-			cat "$htaccess_file"
 			
 			log_action "Restored original ErrorDocument 404 to: $htaccess_file"
 		fi
@@ -476,35 +460,14 @@ process_uninstall_operations() {
 	# Process directly discovered modified .htaccess files first
 	if [ -n "$modified_htaccess" ]; then
 		echo "${PREVIEW_PREFIX}Processing directly discovered modified .htaccess files..."
-		echo "DEBUG: modified_htaccess variable content:"
-		echo "$modified_htaccess" | cat -A
 		local htaccess_direct_count=0
 		
 		while IFS= read -r htaccess_file; do
-			echo "DEBUG: Processing .htaccess file: '$htaccess_file'"
-			if [ -n "$htaccess_file" ]; then
-				echo "DEBUG: File path is not empty"
-				if [ -f "$htaccess_file" ]; then
-					echo "DEBUG: File exists"
-					if grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
-						echo "DEBUG: File contains the note pattern"
-						echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
-						if restore_htaccess_errordocument "$htaccess_file"; then
-							echo "DEBUG: restore_htaccess_errordocument returned success"
-							htaccess_direct_count=$((htaccess_direct_count + 1))
-						else
-							echo "DEBUG: restore_htaccess_errordocument returned failure"
-						fi
-					else
-						echo "DEBUG: File does NOT contain the note pattern"
-						echo "DEBUG: First 5 lines of file:"
-						head -n 5 "$htaccess_file"
-					fi
-				else
-					echo "DEBUG: File does NOT exist: $htaccess_file"
+			if [ -n "$htaccess_file" ] && [ -f "$htaccess_file" ] && grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
+				echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
+				if restore_htaccess_errordocument "$htaccess_file"; then
+					htaccess_direct_count=$((htaccess_direct_count + 1))
 				fi
-			else
-				echo "DEBUG: Empty file path in loop"
 			fi
 		done <<< "$modified_htaccess"
 		
@@ -664,27 +627,6 @@ main() {
 	log_verbose "Found modified_htaccess: $(echo "$modified_htaccess" | wc -l) files"
 	if [ -n "$modified_htaccess" ]; then
 		log_verbose "Modified .htaccess files: $modified_htaccess"
-		# Add more visible debug output
-		echo "DEBUG: Found $(echo "$modified_htaccess" | wc -l) modified .htaccess files:"
-		echo "$modified_htaccess" | while read -r line; do
-			echo "DEBUG: .htaccess file: '$line'"
-			if [ -f "$line" ]; then
-				echo "DEBUG: File exists"
-				if grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$line" 2>/dev/null; then
-					echo "DEBUG: Contains the note pattern"
-				else
-					echo "DEBUG: Does NOT contain the note pattern"
-					echo "DEBUG: First 5 lines of file:"
-					head -n 5 "$line"
-				fi
-			else
-				echo "DEBUG: File does NOT exist"
-			fi
-		done
-	else
-		echo "DEBUG: No modified_htaccess files found in discovery output"
-		echo "DEBUG: Discovery output excerpt:"
-		echo "$discovery_output" | grep -A 10 "modified_htaccess"
 	fi
 	log_verbose "Found upgrade_configs: $(echo "$upgrade_configs" | wc -l) files"
 	log_verbose "Found upgrade_html_files: $(echo "$upgrade_html_files" | wc -l) files"
@@ -717,11 +659,6 @@ main() {
 		echo "PREVIEW OF PENDING CHANGES:"
 		echo "============================"
 		echo ""
-		
-		# Debug output before calling process_uninstall_operations
-		echo "DEBUG: Before process_uninstall_operations call:"
-		echo "DEBUG: modified_htaccess = $(echo "$modified_htaccess" | wc -l) files"
-		echo "DEBUG: First modified_htaccess file: $(echo "$modified_htaccess" | head -1)"
 		
 		# Run through all operations in preview mode
 		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes" "$modified_htaccess"
