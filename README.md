@@ -4,8 +4,11 @@ Web-based status notifications during Lucee upgrades are a Catch-22 because Luce
 
 In actual practice it's safest to keep displaying the "Upgrade in Progress" notification not just until after the upgrade is done, but more importantly until *thorough QA testing* has been completed.
 
-Temporary firewalls are often used to allow access from only specific IP addresses, but again that's not best for end users
-because it has the same appearance as a network issue.
+Temporary firewalls are often used to allow access from only specific IP addresses, but again that's not best for end users because it has the same appearance as a network issue.
+
+While load-balanced environments often handle upgrades by removing individual nodes from rotation, this toolkit remains valuable for scenarios where all nodes need to be upgraded simultaneously and thoroughly tested before resuming normal operations. If there is enough demand, a future version
+may include coordination of upgrades across multiple nodes and integration with CI/CD pipelines.
+Pull requests are also welcome!
 
 ## Apache-level advantages over app-level maintenance mode:
 
