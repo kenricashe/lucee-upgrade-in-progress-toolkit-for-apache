@@ -189,10 +189,17 @@ restore_htaccess_errordocument() {
 	fi
 	
 	log_verbose "Checking .htaccess file for commented ErrorDocument: $htaccess_file"
+	echo "DEBUG: In restore_htaccess_errordocument for file: $htaccess_file"
 	
 	# Check if there's a commented-out ErrorDocument with our note pattern
 	local htaccess_commented
+	echo "DEBUG: Searching for note pattern"
+	local note_line
+	note_line=$(grep "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null)
+	echo "DEBUG: Note line: '$note_line'"
+	
 	htaccess_commented=$(grep -A1 "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null | grep -E "^[[:space:]]*#[[:space:]]*ErrorDocument[[:space:]]+404[[:space:]]+" | head -1)
+	echo "DEBUG: Commented ErrorDocument line: '$htaccess_commented'"
 	
 	if [ -n "$htaccess_commented" ]; then
 		local htaccess_original
@@ -339,6 +346,7 @@ process_uninstall_operations() {
 	local upgrade_configs="$3"
 	local upgrade_html_files="$4"
 	local site_includes="$5"
+	local modified_htaccess="$6"
 
 	# Restore lucee-proxy.conf functionality FIRST
 	if [ "$IS_DEBIAN" = true ]; then
@@ -456,43 +464,48 @@ process_uninstall_operations() {
 		echo ""
 	fi
 	
-	# Check for .htaccess files that need restoration (for all environment types)
-	echo "${PREVIEW_PREFIX}Checking for .htaccess files with commented ErrorDocument directives..."
-	local htaccess_processed_count=0
-	
-	# Check VirtualHost files for DocumentRoot values
-	if [ -n "$vhost_files" ]; then
-		while IFS= read -r vhost_file; do
-			if [ -n "$vhost_file" ] && [ -f "$vhost_file" ]; then
-				# Find DocumentRoot values in this vhost file
-				local docroots
-				docroots=$(grep -E "^[[:space:]]*DocumentRoot[[:space:]]+" "$vhost_file" 2>/dev/null | sed -E 's/^[[:space:]]*DocumentRoot[[:space:]]+//' | tr -d '"')
-				
-				if [ -n "$docroots" ]; then
-					while IFS= read -r docroot; do
-						if [ -z "$docroot" ]; then
-							continue
+	# Process directly discovered modified .htaccess files first
+	if [ -n "$modified_htaccess" ]; then
+		echo "${PREVIEW_PREFIX}Processing directly discovered modified .htaccess files..."
+		echo "DEBUG: modified_htaccess variable content:"
+		echo "$modified_htaccess" | cat -A
+		local htaccess_direct_count=0
+		
+		while IFS= read -r htaccess_file; do
+			echo "DEBUG: Processing .htaccess file: '$htaccess_file'"
+			if [ -n "$htaccess_file" ]; then
+				echo "DEBUG: File path is not empty"
+				if [ -f "$htaccess_file" ]; then
+					echo "DEBUG: File exists"
+					if grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
+						echo "DEBUG: File contains the note pattern"
+						echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
+						if restore_htaccess_errordocument "$htaccess_file"; then
+							echo "DEBUG: restore_htaccess_errordocument returned success"
+							htaccess_direct_count=$((htaccess_direct_count + 1))
+						else
+							echo "DEBUG: restore_htaccess_errordocument returned failure"
 						fi
-						
-						local htaccess_file="${docroot}/.htaccess"
-						if [ -f "$htaccess_file" ] && grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$htaccess_file" 2>/dev/null; then
-							echo "  ${PREVIEW_PREFIX}Found .htaccess with commented ErrorDocument: $htaccess_file"
-							if restore_htaccess_errordocument "$htaccess_file"; then
-								htaccess_processed_count=$((htaccess_processed_count + 1))
-							fi
-						fi
-					done <<< "$docroots"
+					else
+						echo "DEBUG: File does NOT contain the note pattern"
+						echo "DEBUG: First 5 lines of file:"
+						head -n 5 "$htaccess_file"
+					fi
+				else
+					echo "DEBUG: File does NOT exist: $htaccess_file"
 				fi
+			else
+				echo "DEBUG: Empty file path in loop"
 			fi
-		done <<< "$vhost_files"
+		done <<< "$modified_htaccess"
+		
+		if [ "$htaccess_direct_count" -gt 0 ]; then
+			echo "${PREVIEW_PREFIX}Restored $htaccess_direct_count directly discovered .htaccess files"
+		else
+			echo "${PREVIEW_PREFIX}No directly discovered .htaccess files needed restoration"
+		fi
+		echo ""
 	fi
-	
-	if [ "$htaccess_processed_count" -gt 0 ]; then
-		echo "${PREVIEW_PREFIX}Found and processed $htaccess_processed_count .htaccess files with ErrorDocument directives"
-	else
-		echo "${PREVIEW_PREFIX}No .htaccess files needed ErrorDocument restoration"
-	fi
-	echo ""
 	
 	# Remove upgrade HTML files
 	if [ -n "$upgrade_html_files" ]; then
@@ -626,6 +639,7 @@ main() {
 	vhost_files=$(echo "$discovery_output" | sed -n '/[[:space:]]*"vhost_files": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
 	proxy_configs=$(echo "$discovery_output" | sed -n '/[[:space:]]*"proxy_configs": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
 	upgrade_configs=$(echo "$discovery_output" | sed -n '/[[:space:]]*"upgrade_configs": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
+	modified_htaccess=$(echo "$discovery_output" | sed -n '/[[:space:]]*"modified_htaccess": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
 	upgrade_html_files=$(echo "$discovery_output" | sed -n '/[[:space:]]*"upgrade_html_files": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
 	site_includes=$(echo "$discovery_output" | sed -n '/[[:space:]]*"site_includes": \[/,/[[:space:]]*\]/p' | grep -o '"/[^"]*"' | sed 's/"//g' | grep -v '^$')
 	
@@ -637,6 +651,31 @@ main() {
 	log_verbose "Found proxy_configs: $(echo "$proxy_configs" | wc -l) files"
 	if [ -n "$proxy_configs" ]; then
 		log_verbose "Proxy configs: $proxy_configs"
+	fi
+	log_verbose "Found modified_htaccess: $(echo "$modified_htaccess" | wc -l) files"
+	if [ -n "$modified_htaccess" ]; then
+		log_verbose "Modified .htaccess files: $modified_htaccess"
+		# Add more visible debug output
+		echo "DEBUG: Found $(echo "$modified_htaccess" | wc -l) modified .htaccess files:"
+		echo "$modified_htaccess" | while read -r line; do
+			echo "DEBUG: .htaccess file: '$line'"
+			if [ -f "$line" ]; then
+				echo "DEBUG: File exists"
+				if grep -q "NOTE: ErrorDocument 404.*configure-apache.sh" "$line" 2>/dev/null; then
+					echo "DEBUG: Contains the note pattern"
+				else
+					echo "DEBUG: Does NOT contain the note pattern"
+					echo "DEBUG: First 5 lines of file:"
+					head -n 5 "$line"
+				fi
+			else
+				echo "DEBUG: File does NOT exist"
+			fi
+		done
+	else
+		echo "DEBUG: No modified_htaccess files found in discovery output"
+		echo "DEBUG: Discovery output excerpt:"
+		echo "$discovery_output" | grep -A 10 "modified_htaccess"
 	fi
 	log_verbose "Found upgrade_configs: $(echo "$upgrade_configs" | wc -l) files"
 	log_verbose "Found upgrade_html_files: $(echo "$upgrade_html_files" | wc -l) files"
@@ -671,7 +710,7 @@ main() {
 		echo ""
 		
 		# Run through all operations in preview mode
-		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes"
+		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes" "$modified_htaccess"
 		
 		if [ "$FORCE" = false ]; then
 			echo ""
@@ -683,7 +722,7 @@ main() {
 				echo "=================="
 				echo ""
 				TOTAL_ITEMS_PROCESSED=0
-				process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes"
+				process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes" "$modified_htaccess"
 			else
 				echo "Uninstall cancelled."
 				exit 0
@@ -698,7 +737,7 @@ main() {
 			fi
 			echo ""
 		fi
-		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes"
+		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes" "$modified_htaccess"
 	fi
 }
 
