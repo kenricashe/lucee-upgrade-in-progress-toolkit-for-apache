@@ -218,13 +218,22 @@ restore_htaccess_errordocument() {
 			fi
 			
 			# Remove the note line
+			echo "DEBUG: Removing note line"
 			sed -i "/NOTE: ErrorDocument 404.*configure-apache.sh/d" "$htaccess_file"
+			echo "DEBUG: After removing note line:"
+			cat "$htaccess_file"
 			
 			# Uncomment the ErrorDocument line
+			echo "DEBUG: Uncommenting ErrorDocument line"
 			sed -i 's/^\([[:space:]]*\)#[[:space:]]*\(ErrorDocument[[:space:]]\+404.*\)/\1\2/' "$htaccess_file"
+			echo "DEBUG: After uncommenting ErrorDocument line:"
+			cat "$htaccess_file"
 			
 			# Normalize whitespace to clean up any extra blank lines
+			echo "DEBUG: Normalizing whitespace"
 			normalize_conf_whitespace "$htaccess_file"
+			echo "DEBUG: After normalizing whitespace:"
+			cat "$htaccess_file"
 			
 			log_action "Restored original ErrorDocument 404 to: $htaccess_file"
 		fi
