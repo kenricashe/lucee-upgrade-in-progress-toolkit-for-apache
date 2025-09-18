@@ -709,6 +709,11 @@ main() {
 		echo "============================"
 		echo ""
 		
+		# Debug output before calling process_uninstall_operations
+		echo "DEBUG: Before process_uninstall_operations call:"
+		echo "DEBUG: modified_htaccess = $(echo "$modified_htaccess" | wc -l) files"
+		echo "DEBUG: First modified_htaccess file: $(echo "$modified_htaccess" | head -1)"
+		
 		# Run through all operations in preview mode
 		process_uninstall_operations "$vhost_files" "$proxy_configs" "$upgrade_configs" "$upgrade_html_files" "$site_includes" "$modified_htaccess"
 		
