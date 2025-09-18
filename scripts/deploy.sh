@@ -95,14 +95,5 @@ for file in "${FILES[@]}"; do
 	copy_and_chmod "$file"
 done
 
-# Rewrite Include paths inside lucee-detect-upgrade.conf to match selected LUCEE_ROOT
-CONF_FILE="${UPG_DIR}/lucee-detect-upgrade.conf"
-if [ -f "$CONF_FILE" ]; then
-	# Escape '&' for sed replacement safety
-	ESC_HTTPD_ROOT="${HTTPD_ROOT//&/\\&}"
-	# Replace the template's hardcoded /etc/apache2/lucee-upgrade-in-progress with just HTTPD_LUCEE_ROOT
-	sed -i "s|/etc/apache2/lucee-upgrade-in-progress|${ESC_HTTPD_ROOT}/lucee-upgrade-in-progress|g" "$CONF_FILE"
-fi
-
 echo ""
 echo "Deployment to ${UPG_DIR} completed successfully."

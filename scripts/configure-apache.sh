@@ -1064,9 +1064,27 @@ ensure_global_confs() {
 		execute_or_simulate "build_ip_all_conf_from_txt"
 	fi
 
-	# if lucee-detect-upgrade.conf does not exist in HTTPD_LUCEE_ROOT, copy it from UPG_DIR
-	if [ ! -f "${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf" ]; then
-		execute_or_simulate "copy_file" "${UPG_DIR}/lucee-detect-upgrade.conf" "${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf"
+	# Copy lucee-detect-upgrade.conf from UPG_DIR to HTTPD_LUCEE_ROOT and adjust the
+	# HTTPD_ROOT path which can be changed by tests/cpanel-simulate.sh.
+	if [ "$PREVIEW_MODE" = true ]; then
+		echo "Would create ${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf" >&2
+	else
+		echo "Create ${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf" >&2
+		
+		# Create a temporary file
+		local tmp=$(mktemp)
+		
+		# Escape '&' for sed replacement
+		local ESC_HTTPD_ROOT="${HTTPD_ROOT//&/\\&}"
+		
+		# Replace the template's hardcoded /etc/apache2 with detected HTTPD_ROOT
+		sed "s|/etc/apache2|${ESC_HTTPD_ROOT}|g" "${UPG_DIR}/lucee-detect-upgrade.conf" > "$tmp"
+		
+		# Copy the processed file to the destination
+		cp -f --no-preserve=all "$tmp" "${HTTPD_LUCEE_ROOT}/lucee-detect-upgrade.conf"
+		
+		# Remove the temporary file
+		rm -f "$tmp"
 	fi
 
 	echo ""
