@@ -53,9 +53,7 @@ cPanel-managed servers are also supported.
 
 - Apache 2.4 with mod_rewrite, mod_proxy, mod_headers, and mod_setenvif (mod_cfml is optional and not modified by this package).
 
-- Lucee-related directives found in global Apache config as well as site-specific `.htaccess` will be migrated into semantically correct `.conf` files (e.g. `lucee-proxy.conf`) and `<VirtualHost>` blocks to enable toggling (also best practice for performance, consistency, security, and manageability).
-
-- Other than the initial option to enter your Lucee install path, the config assumes default Apache paths and proxying of .cf* files to Lucee via http or AJP through Tomcat. However, because it's open source, you can customize if you need to, and pull requests are always welcome!
+- Lucee-related directives found in global Apache config as well as site-specific `.htaccess` will be migrated into semantically correct `.conf` files (e.g. `lucee-proxy.conf`) to enable toggling (also best practice for performance, consistency, security, and manageability).
 
 
 ## Backup Folders
