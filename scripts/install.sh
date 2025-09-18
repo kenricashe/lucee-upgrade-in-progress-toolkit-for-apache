@@ -6,7 +6,7 @@
 # Example with custom Lucee root path in environment variable:
 # curl -fsSL https://raw.githubusercontent.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/main/scripts/install.sh | sudo env LUCEE_ROOT=/opt/lucee6 bash
 #
-# Example with non-master branch name in URL e.g. for QA testing:
+# Example with non-main branch name in URL e.g. for QA testing:
 # (URL="https://raw.githubusercontent.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/refs/heads/branch-name/scripts/install.sh"; curl -fsSL "$URL" | sudo env SOURCE_URL="$URL" bash)
 #
 # GitHub CDN caching can last 5 minutes. For quicker testing, in the URL replace branch with the commit sha:
@@ -85,7 +85,7 @@ if [ -z "$REF" ]; then
 		echo "Auto-detected REF=$REF from installer URL"
 	fi
 fi
-REF=${REF:-master}
+REF=${REF:-main}
 
 TARBALL_URL="https://codeload.github.com/${OWNER}/${REPO}/tar.gz/${REF}"
 TMPDIR=$(mktemp -d)
