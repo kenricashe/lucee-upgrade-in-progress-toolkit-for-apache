@@ -26,15 +26,26 @@ FILES=(
 	"tests/cpanel-simulate.sh"
 )
 
-# preflight: ensure all source files exist in the script directory
+# preflight: ensure all source files exist in their respective directories
 missing=()
+parent_dir="$(dirname "$SCRIPT_DIR")"
+
 for f in "${FILES[@]}"; do
-	if [ ! -f "${SCRIPT_DIR}/$f" ]; then
+	if [[ "$f" == *.conf ]]; then
+		src_dir="${parent_dir}/apache"
+	elif [[ "$f" == *.html ]]; then
+		src_dir="${parent_dir}/html"
+	else
+		src_dir="$SCRIPT_DIR"
+	fi
+	
+	if [ ! -f "${src_dir}/$f" ]; then
 		missing+=("$f")
 	fi
 done
+
 if [ ${#missing[@]} -gt 0 ]; then
-	echo "Error: Missing source files in ${SCRIPT_DIR}:"
+	echo "Error: Missing source files:"
 	for m in "${missing[@]}"; do
 		echo "  - $m"
 	done
