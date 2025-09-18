@@ -19,9 +19,9 @@ Pull requests are also welcome!
 
 ## Implementation:
 
-When you enable "Upgrade in Progress" mode via the app menu, a status notification is displayed in response to every Lucee-bound request. That applies to *every website on your server* that has been configured for this flip-a-switch style automation.
+When you enable "Upgrade in Progress" mode via the app menu, a status notification is displayed in response to every Lucee-bound request. That applies to every website on your server that has been configured for this flip-a-switch style automation.
 
-Users are not redirected to a different page, so the URL does not change. They will see the notice of how the page will automatically refresh when the upgrade is complete. That is implemented by detecting a unique http header via HEAD requests which are more efficient than refreshing the page.
+Users are not redirected to a different page, so the URL does not change. They will see the notice of how the page will automatically refresh when the upgrade is complete. That is implemented by detecting a unique http header via HEAD request which is more efficient than refreshing the page.
 
 ## Other Features
 
@@ -31,27 +31,23 @@ Users are not redirected to a different page, so the URL does not change. They w
 
 - Enables optional custom branding of the "Upgrade in Progress" page per site.
 
-- Efficiently loads end user's requested page after upgrade complete.
+- Automatically loads user's originally requested page after upgrade complete.
 
 - Doesn't require CDN, load balancing, etc.
 
+- Previews pending changes and waits for confirmation before applying them.
+
 - Backs up existing files before modifying them.
 
+- Option to Uninstall.
+
 - Open source!
-
-
-## Menu Options
-
-1. Get Site Data
-2. View/Edit Site Data
-3. Configure Apache
-4. Begin 'Upgrade in Progress'
-5. End 'Upgrade in Progress'
 
 
 ## Requirements
 
 - One of the two main Linux familes (Debian, Ubuntu, Pop!_OS, etc or Fedora, Red Hat, AlmaLinux, Rocky Linux, etc).
+cPanel-managed servers are also supported.
 
 - Root or sudo permissions.
 
@@ -82,7 +78,13 @@ To exclude an entire site, *before configuring Apache*, remove it from the sites
 curl -fsSL https://raw.githubusercontent.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/main/scripts/install.sh | sudo bash
 ```
 
-## Execute
+## Customize (optional)
+
+Example: Before opening the menu and running the Apache configuration script,
+you may want to change the 15 minute estimated downtime in
+`/opt/lucee/sys/upgrade-in-progress/lucee-upgrade-in-progress.html`.
+
+## Open the Toolkit Menu
 
 ```bash
 sudo /opt/lucee/sys/upgrade-in-progress/menu.sh
