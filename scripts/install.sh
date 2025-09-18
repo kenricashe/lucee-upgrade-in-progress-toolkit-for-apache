@@ -45,17 +45,23 @@ fi
 
 # Auto-derive REF from the invoking raw.githubusercontent.com URL (curl | bash) when not provided
 if [ -z "$REF" ]; then
+	echo "DEBUG: No REF provided, attempting to auto-detect from URL"
 	URL_REF_AUTO=""
 	for PID in "$PPID" "$$"; do
 		if [ -r "/proc/$PID/cmdline" ]; then
 			CMDLINE=$(tr '\0' ' ' < "/proc/$PID/cmdline" 2>/dev/null)
+			echo "DEBUG: Checking cmdline for PID $PID: $CMDLINE"
 			if [[ "$CMDLINE" == *"/raw.githubusercontent.com/"* ]]; then
+				echo "DEBUG: Found githubusercontent URL in cmdline"
 				# Prefer precise capture using known suffix to support refs with slashes
 				URL_REF_AUTO=$(printf '%s\n' "$CMDLINE" | sed -n 's|.*raw.githubusercontent.com/[^/]*/[^/]*/\(.*\)/scripts/install.sh|\1|p')
+				echo "DEBUG: First attempt at URL_REF_AUTO: '$URL_REF_AUTO'"
 				if [ -z "$URL_REF_AUTO" ]; then
 					URL_REF_AUTO=$(printf '%s\n' "$CMDLINE" | sed -n 's|.*raw.githubusercontent.com/[^/]*/[^/]*/\([^/]*\)/.*|\1|p')
+					echo "DEBUG: Second attempt at URL_REF_AUTO: '$URL_REF_AUTO'"
 				fi
 				if [ -n "$URL_REF_AUTO" ]; then
+					echo "DEBUG: Found URL_REF_AUTO: $URL_REF_AUTO"
 					break
 				fi
 			fi
@@ -64,16 +70,23 @@ if [ -z "$REF" ]; then
 
 	# Fallback: search across all processes (useful for curl | sudo bash pipelines)
 	if [ -z "$URL_REF_AUTO" ]; then
+		echo "DEBUG: No URL_REF_AUTO found yet, searching all processes"
 		for PROC in /proc/[0-9]*/cmdline; do
 			if [ -r "$PROC" ]; then
 				CMDLINE=$(tr '\0' ' ' < "$PROC" 2>/dev/null)
-				if [[ "$CMDLINE" == *"/raw.githubusercontent.com/"* ]] && [[ "$CMDLINE" == *"/scripts/install.sh"* ]]; then
+								# Check for both old and new path patterns
+				if [[ "$CMDLINE" == *"/raw.githubusercontent.com/"* ]] && ([[ "$CMDLINE" == *"/scripts/install.sh"* ]] || [[ "$CMDLINE" == *"/lucee/linux/sys/upgrade-in-progress/install.sh"* ]]); then
+					echo "DEBUG: Found matching cmdline in process: $PROC"
+					echo "DEBUG: Cmdline: $CMDLINE"
 					# Prefer precise capture using known suffix to support refs with slashes
 					URL_REF_AUTO=$(printf '%s\n' "$CMDLINE" | sed -n 's|.*raw.githubusercontent.com/[^/]*/[^/]*/\(.*\)/scripts/install.sh|\1|p')
+					echo "DEBUG: First attempt at URL_REF_AUTO: '$URL_REF_AUTO'"
 					if [ -z "$URL_REF_AUTO" ]; then
 						URL_REF_AUTO=$(printf '%s\n' "$CMDLINE" | sed -n 's|.*raw.githubusercontent.com/[^/]*/[^/]*/\([^/]*\)/.*|\1|p')
+						echo "DEBUG: Second attempt at URL_REF_AUTO: '$URL_REF_AUTO'"
 					fi
 					if [ -n "$URL_REF_AUTO" ]; then
+						echo "DEBUG: Found URL_REF_AUTO: $URL_REF_AUTO"
 						break
 					fi
 				fi
@@ -86,8 +99,10 @@ if [ -z "$REF" ]; then
 	fi
 fi
 REF=${REF:-main}
+echo "DEBUG: Final REF value: $REF"
 
 TARBALL_URL="https://codeload.github.com/${OWNER}/${REPO}/tar.gz/${REF}"
+echo "DEBUG: Using tarball URL: $TARBALL_URL"
 TMPDIR=$(mktemp -d)
 
 cleanup() {
