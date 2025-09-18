@@ -282,7 +282,7 @@ case "${1:-}" in
 	"off")
 		remove_dummy_files
 		enable_CONF_DIR
-		[ -f "$SITES_FILE" ] && rm "$SITES_FILE"
+		[ -f "$SITES_FILE" ] && rm -f "$SITES_FILE"
 		echo ""
 		echo "✓ cPanel simulation DISABLED"
 		;;
