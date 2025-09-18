@@ -104,4 +104,5 @@ if [ -f "$CONF_FILE" ]; then
 	sed -i "s|/etc/apache2/lucee-upgrade-in-progress|${ESC_HTTPD_ROOT}/lucee-upgrade-in-progress|g" "$CONF_FILE"
 fi
 
+echo ""
 echo "Deployment to ${UPG_DIR} completed successfully."
