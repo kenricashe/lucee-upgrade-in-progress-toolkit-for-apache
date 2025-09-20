@@ -64,7 +64,7 @@ cPanel-managed servers are also supported.
 
 `/opt/lucee/sys/upgrade-in-progress/backups/...`
 
-Backups are created only when a file already exists and pending modification.
+Backups are created when a file already exists and has pending modifications.
 
 
 ## QA Testing
