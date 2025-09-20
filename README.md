@@ -1,8 +1,6 @@
 # Lucee 'Upgrade in Progress' Toolkit for Apache
 
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1)
-[![GitHub stars](https://img.shields.io/github/stars/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache.svg)](https://github.com/kenricashe/lucee-upgrade-in-progress-toolkit-for-apache/issues)
 
 Web-based status notifications during Lucee upgrades are a Catch-22 because Lucee itself is not running during the upgrade. That results in an ugly "503 Service Unavailable" error. While it's true that `ErrorDocument 503` can be customized, that page is only displayed when Lucee is not running.
 
