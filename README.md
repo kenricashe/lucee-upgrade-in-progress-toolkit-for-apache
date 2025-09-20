@@ -97,3 +97,5 @@ Then run each item in the menu in the order that they are listed.
 To add an IP address to the allow list, use the menu option "IP Allow List (for QA Testing)". `127.0.0.1` and `::1` (localhost) are pre-configured, but can be disabled by commenting out the line(s) with `#`.
 
 To exclude an entire site, *before configuring Apache*, remove it from the sites data file via the app menu option "View/Edit Site Data". That is mostly suitable only for QA domains e.g. `qa.example.com`.
+If Apache was already configured, you will need to Uninstall the toolkit, 
+then exclude the site, then configure Apache again.
