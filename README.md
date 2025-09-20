@@ -79,6 +79,9 @@ in the HTML template:
 
 `/opt/lucee/sys/upgrade-in-progress/lucee-upgrade-in-progress.html`
 
+After configuring Apache, `lucee-upgrade-in-progress.html` will exist in each site's docroot
+and you can customize each one separately if desired.
+
 ## Usage
 
 ### Open the Toolkit Menu
