@@ -83,8 +83,10 @@ curl -fsSL https://raw.githubusercontent.com/kenricashe/lucee-upgrade-in-progres
 ## Customize (optional)
 
 Example: Before opening the menu and running the Apache configuration script,
-you may want to change the 15 minute estimated downtime or any other content in
-`/opt/lucee/sys/upgrade-in-progress/lucee-upgrade-in-progress.html`.
+you may want to change the 15 minute estimated downtime or any other content
+in the HTML template:
+
+`/opt/lucee/sys/upgrade-in-progress/lucee-upgrade-in-progress.html`
 
 ## Usage
 
