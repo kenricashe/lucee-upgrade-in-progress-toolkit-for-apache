@@ -67,13 +67,6 @@ cPanel-managed servers are also supported.
 Backups are created when a file already exists and has pending modifications.
 
 
-## QA Testing
-
-To add an IP address to the allow list, use the menu option "IP Allow List (for QA Testing)". `127.0.0.1` and `::1` (localhost) are pre-configured, but can be disabled by commenting out the line(s) with `#`.
-
-To exclude an entire site, *before configuring Apache*, remove it from the sites data file via the app menu option "View/Edit Site Data". That is mostly suitable only for QA domains e.g. `qa.example.com`.
-
-
 ## Installation
 
 ```bash
@@ -97,3 +90,10 @@ sudo /opt/lucee/sys/upgrade-in-progress/menu.sh
 ```
 
 Then run each item in the menu in the order that they are listed.
+
+
+## QA Testing
+
+To add an IP address to the allow list, use the menu option "IP Allow List (for QA Testing)". `127.0.0.1` and `::1` (localhost) are pre-configured, but can be disabled by commenting out the line(s) with `#`.
+
+To exclude an entire site, *before configuring Apache*, remove it from the sites data file via the app menu option "View/Edit Site Data". That is mostly suitable only for QA domains e.g. `qa.example.com`.
