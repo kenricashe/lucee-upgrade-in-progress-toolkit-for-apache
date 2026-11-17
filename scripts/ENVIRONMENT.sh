@@ -111,6 +111,9 @@ if [ "$SCRIPT_FILENAME" = "cpanel-simulate.sh" ]; then
 fi
 
 press_enter_to_continue() {
+	# interactive checkpoint for a human watching an --execute run — skip when
+	# stdin isn't a terminal (cron/cfexecute subshell) so automation can't hang
+	[ -t 0 ] || return 0
 	printf "\nPress Enter to continue..."
 	read -r _
 }
