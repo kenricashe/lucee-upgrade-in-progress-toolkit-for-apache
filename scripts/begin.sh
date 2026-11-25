@@ -59,4 +59,5 @@ else
 	exit 1
 fi
 
-echo "DONE!"
+echo "DONE: 'Upgrade in Progress' mode is now ON — traffic sees the maintenance page."
+echo "Run ${SCRIPT_DIR}/end.sh after the upgrade to restore normal traffic."
